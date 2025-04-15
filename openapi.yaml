@@ -32,11 +32,16 @@ paths:
                   properties:
                     titulo:
                       type: string
+                      example: I will edit an engaging vlog for youtube
                     precio:
                       type: string
+                      example: From $25
                     vendedor:
                       type: string
+                      example: video_master21
                     rating:
                       type: string
+                      example: 4.9
                     link_afiliado:
                       type: string
+                      example: https://go.fiverr.com/visit/?bta=1114947&brand=fiverrmarketplace&url=https://www.fiverr.com/seller/gig-title
