@@ -1,17 +1,25 @@
-# Usa una imagen de Python con dependencias de navegador
-FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
+# Usa una imagen oficial de Python
+FROM python:3.11-slim
 
-# Crea un directorio de trabajo
+# Instala dependencias necesarias del sistema
+RUN apt-get update && apt-get install -y \
+    curl gnupg unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala Playwright y navegadores
+RUN pip install --no-cache-dir playwright flask gunicorn
+RUN playwright install --with-deps
+
+# Crea directorio para el código
 WORKDIR /app
 
-# Copia los archivos del proyecto al contenedor
+# Copia todo el código
 COPY . .
 
-# Instala las dependencias
-RUN pip install -r requirements.txt
+# Expone el puerto que usará Flask
+ENV PORT=10000
+EXPOSE $PORT
 
-# Expón el puerto que usa Flask
-EXPOSE 3000
+# Comando para arrancar la app con Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:10000", "main:app"]
 
-# Comando para iniciar la app
-CMD ["python", "main.py"]
