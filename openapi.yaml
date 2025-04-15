@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: Fiverr Gig Search API
+  description: Busca gigs en Fiverr y devuelve título, precio, vendedor, rating y link de afiliado.
+  version: 1.0.0
+servers:
+  - url: https://fiverr-api-gpt.onrender.com
+paths:
+  /fiverr/search:
+    post:
+      summary: Buscar gigs en Fiverr
+      operationId: buscarGigs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: diseño de logos
+      responses:
+        '200':
+          description: Lista de gigs encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    titulo:
+                      type: string
+                    precio:
+                      type: string
+                    vendedor:
+                      type: string
+                    rating:
+                      type: string
+                    link_afiliado:
+                      type: string
