@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: fiverr-api-gpt
+    env: python
+    buildCommand: ./build.sh
+    startCommand: python main.py
+    plan: free
+    branch: main
+    runtime: python
+    region: frankfurt
+    autoDeploy: true
