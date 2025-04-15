@@ -19,9 +19,9 @@ paths:
               properties:
                 query:
                   type: string
-                  example: diseño de logos
+                  example: edición de video
       responses:
-        '200':
+        "200":
           description: Lista de gigs encontrados
           content:
             application/json:
