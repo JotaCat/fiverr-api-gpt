@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-
-@app.route("/", methods=["GET"])
-def home():
-    return "Servidor Flask activo 🔥"
 
 @app.route("/fiverr/search", methods=["POST"])
 def buscar_gigs():
@@ -15,41 +14,42 @@ def buscar_gigs():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox"]
+            )
             page = browser.new_page()
             url = f"https://www.fiverr.com/search/gigs?query={query.replace(' ', '%20')}"
-            page.goto(url)
-            page.wait_for_timeout(6000)
+            page.goto(url, timeout=60000)
+            page.wait_for_timeout(5000)
 
-            # Buscar bloques de gigs
-            gigs = page.query_selector_all("li.gig-card-layout")
+            gigs = page.query_selector_all("li[data-testid='gig-card-layout']")[:5]
 
-            for gig in gigs[:5]:  # Solo los primeros 5
-                try:
-                    title = gig.query_selector("h3").inner_text()
-                    price = gig.query_selector("div.price-wrapper").inner_text()
-                    seller = gig.query_selector("a.seller-name").inner_text()
-                    rating = gig.query_selector("span.rating").inner_text()
-                    link = gig.query_selector("a").get_attribute("href")
-
-                    # Enlace de afiliado
-                    affiliate_link = f"https://go.fiverr.com/visit/?bta=1114947&brand=fiverrmarketplace&url=https://www.fiverr.com{link}"
-
-                    results.append({
-                        "titulo": title,
-                        "precio": price,
-                        "vendedor": seller,
-                        "rating": rating,
-                        "link_afiliado": affiliate_link
-                    })
-                except Exception:
-                    continue
+            for gig in gigs:
+                titulo = gig.query_selector("h3")
+                precio = gig.query_selector("[data-testid='price'] span")
+                vendedor = gig.query_selector("a[data-testid='seller-link']")
+                rating = gig.query_selector("[data-testid='rating-score']")
+                link = gig.query_selector("a")
+                
+                results.append({
+                    "titulo": titulo.inner_text().strip() if titulo else "Sin título",
+                    "precio": precio.inner_text().strip() if precio else "N/A",
+                    "vendedor": vendedor.inner_text().strip() if vendedor else "Desconocido",
+                    "rating": rating.inner_text().strip() if rating else "Sin valoraciones",
+                    "link_afiliado": (
+                        f"https://go.fiverr.com/visit/?bta=1114947&brand=fiverrmarketplace&url={link.get_attribute('href')}"
+                        if link else "Sin enlace"
+                    )
+                })
 
             browser.close()
         return jsonify(results)
 
     except Exception as e:
+        logging.error(f"Error en la búsqueda: {e}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+@app.route("/", methods=["GET"])
+def home():
+    return "Servidor Flask activo 🔥"
