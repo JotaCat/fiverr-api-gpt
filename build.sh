@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# Instala dependencias del sistema
+# Instalar dependencias del sistema necesarias para Chromium
 apt-get update
 apt-get install -y wget unzip curl gnupg
 
-# Instala Playwright y sus navegadores
+# Instalar las dependencias de Python
+pip install -r requirements.txt
+
+# Instalar Playwright y descargar Chromium
 pip install playwright
 playwright install chromium
