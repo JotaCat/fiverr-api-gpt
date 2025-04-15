@@ -1,20 +1,18 @@
-# Imagen oficial con Chromium ya preinstalado y listo para Playwright
+# Imagen oficial con Playwright + Chromium listo para usar
 FROM mcr.microsoft.com/playwright/python:v1.42.0-focal
 
-# Establece el directorio de trabajo
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia todo tu código al contenedor
+# Copia el código fuente al contenedor
 COPY . .
 
-# Instala tus dependencias
+# Instala las dependencias desde requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expón el puerto que usará Flask
 ENV PORT=10000
 EXPOSE $PORT
 
-# Ejecuta la app con Gunicorn (mejor que usar Flask directamente en producción)
+# Inicia la app con Gunicorn
 CMD ["gunicorn", "-b", "0.0.0.0:10000", "main:app"]
-
-
