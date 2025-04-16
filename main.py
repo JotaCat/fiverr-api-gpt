@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 from waitress import serve
 
-# Instalar navegadores si no están presentes (solución a Render que los borra)
+# Instala navegadores en cada arranque (para Render Free)
 try:
     subprocess.run(["playwright", "install"], check=True)
 except Exception as e:
@@ -30,11 +30,22 @@ def buscar_gigs():
             page = browser.new_page()
             url = f"https://www.fiverr.com/search/gigs?query={query.replace(' ', '%20')}"
             page.goto(url, timeout=60000)
-            page.wait_for_timeout(5000)
 
-            gigs = page.query_selector_all("li[data-testid='gig-card-layout']")[:5]
+            # Aumentamos el tiempo de espera para que cargue todo el contenido
+            page.wait_for_timeout(10000)
 
-            for gig in gigs:
+            # DEBUG: Mostrar HTML completo en consola
+            html = page.content()
+            logging.debug(f"\n\n== HTML capturado ==\n{html[:3000]}\n...\n")
+
+            # Intentamos primero con el selector original
+            gigs = page.query_selector_all("li[data-testid='gig-card-layout']")
+
+            # Fallback si no encuentra nada
+            if not gigs:
+                gigs = page.query_selector_all("article")
+
+            for gig in gigs[:5]:  # Solo los primeros 5
                 titulo = gig.query_selector("h3")
                 precio = gig.query_selector("[data-testid='price'] span")
                 vendedor = gig.query_selector("a[data-testid='seller-link']")
