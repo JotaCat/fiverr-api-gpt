@@ -1,3 +1,11 @@
+from flask import Flask, request, jsonify
+from playwright.sync_api import sync_playwright
+import logging
+import os
+
+logging.basicConfig(level=logging.DEBUG)
+
+app = Flask(__name__
 @app.route("/fiverr/search", methods=["POST"])
 def buscar_gigs():
     data = request.get_json()
