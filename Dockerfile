@@ -1,16 +1,12 @@
-# Usa una imagen oficial optimizada de Python
+# Usa una imagen oficial de Python como base
 FROM python:3.11-slim
 
-# Variables de entorno
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PORT=10000
-
-# Instala dependencias necesarias del sistema y herramientas
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+# Instala dependencias necesarias del sistema para Playwright
+RUN apt-get update && apt-get install -y \
     wget \
+    curl \
     gnupg \
+    ca-certificates \
     libnss3 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -29,11 +25,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     libappindicator3-1 \
     lsb-release \
-    ca-certificates \
-    && apt-get clean \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Establece directorio de trabajo
+# Crea directorio de trabajo
 WORKDIR /app
 
 # Copia los archivos del proyecto
@@ -43,11 +38,12 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Instala navegadores para Playwright
+# Instala los navegadores de Playwright
 RUN python -m playwright install --with-deps
 
-# Expone el puerto usado por Flask
-EXPOSE ${PORT}
+# Expone el puerto que Render espera
+ENV PORT=10000
+EXPOSE 10000
 
-# Comando de inicio
+# Ejecuta la aplicación
 CMD ["python", "main.py"]
