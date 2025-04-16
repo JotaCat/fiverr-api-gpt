@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
+from waitress import serve
 import logging
 import os
 
@@ -61,12 +62,6 @@ def buscar_gigs():
 def home():
     return "Servidor Flask activo 🔥"
 
-# Solo se usa en modo desarrollo local
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-from waitress import serve
-
 if __name__ == '__main__':
-    from app import app  # o como se llame tu instancia de Flask
-    serve(app, host='0.0.0.0', port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    serve(app, host='0.0.0.0', port=port)
