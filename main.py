@@ -5,7 +5,8 @@ import os
 
 logging.basicConfig(level=logging.DEBUG)
 
-app = Flask(__name__
+app = Flask(__name__)
+
 @app.route("/fiverr/search", methods=["POST"])
 def buscar_gigs():
     data = request.get_json()
@@ -32,25 +33,22 @@ def buscar_gigs():
                 rating = gig.query_selector("[data-testid='rating-score']")
                 link = gig.query_selector("a")
 
-                descripcion = f"{titulo.inner_text().strip() if titulo else 'Servicio profesional'} por {vendedor.inner_text().strip() if vendedor else 'alguien'} desde {precio.inner_text().strip() if precio else 'N/A'}, con valoración de {rating.inner_text().strip() if rating else '0'} estrellas."
-
                 results.append({
-    "titulo": titulo.inner_text().strip() if titulo else "Sin título",
-    "precio": precio.inner_text().strip() if precio else "N/A",
-    "vendedor": vendedor.inner_text().strip() if vendedor else "Desconocido",
-    "rating": rating.inner_text().strip() if rating else "Sin valoraciones",
-    "descripcion": (
-        f"{titulo.inner_text().strip() if titulo else 'Gig sin título'} "
-        f"por {vendedor.inner_text().strip() if vendedor else 'vendedor desconocido'}, "
-        f"desde {precio.inner_text().strip() if precio else 'precio no disponible'} "
-        f"con valoración de {rating.inner_text().strip() if rating else 'sin puntuación'} estrellas."
-    ),
-    "link_afiliado": (
-        f"https://go.fiverr.com/visit/?bta=1114947&brand=fiverrmarketplace&url={link.get_attribute('href')}"
-        if link else "Sin enlace"
-    )
-})
-
+                    "titulo": titulo.inner_text().strip() if titulo else "Sin título",
+                    "precio": precio.inner_text().strip() if precio else "N/A",
+                    "vendedor": vendedor.inner_text().strip() if vendedor else "Desconocido",
+                    "rating": rating.inner_text().strip() if rating else "Sin valoraciones",
+                    "descripcion": (
+                        f"{titulo.inner_text().strip() if titulo else 'Gig sin título'} "
+                        f"por {vendedor.inner_text().strip() if vendedor else 'vendedor desconocido'}, "
+                        f"desde {precio.inner_text().strip() if precio else 'precio no disponible'} "
+                        f"con valoración de {rating.inner_text().strip() if rating else 'sin puntuación'} estrellas."
+                    ),
+                    "link_afiliado": (
+                        f"https://go.fiverr.com/visit/?bta=1114947&brand=fiverrmarketplace&url={link.get_attribute('href')}"
+                        if link else "Sin enlace"
+                    )
+                })
 
             browser.close()
         return jsonify(results)
@@ -58,3 +56,11 @@ def buscar_gigs():
     except Exception as e:
         logging.error(f"Error en la búsqueda: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Servidor Flask activo 🔥"
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
