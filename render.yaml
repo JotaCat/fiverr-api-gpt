@@ -1,9 +1,14 @@
 services:
   - type: web
     name: fiverr-api-gpt
-    env: docker
-    plan: free
-    branch: main
+    env: python
     region: frankfurt
-    autoDeploy: true
-    healthCheckPath: /
+    plan: free
+    buildCommand: poetry install && poetry run playwright install
+    startCommand: python main.py
+    envVars:
+      - key: PORT
+        value: 10000
+    buildFilter:
+      paths:
+        - "*"
