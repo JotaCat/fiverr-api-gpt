@@ -6,3 +6,4 @@ services:
     branch: main
     region: frankfurt
     autoDeploy: true
+    healthCheckPath: /

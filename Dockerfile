@@ -38,12 +38,13 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Instala los navegadores de Playwright
-RUN python -m playwright install --with-deps
+# Instala Playwright y su navegador Chromium
+RUN playwright install chromium
 
 # Expone el puerto que Render espera
 ENV PORT=10000
 EXPOSE 10000
 
-# Ejecuta la aplicación
-CMD ["python", "main.py"]
+# Ejecuta la aplicación con Gunicorn
+CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:10000"]
+
