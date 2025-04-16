@@ -1,17 +1,18 @@
 import subprocess
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from playwright.sync_api import sync_playwright
 from waitress import serve
 
-# Instala navegadores (Render puede borrar cache al reiniciar)
+# Instalación automática de navegadores para entornos como Render
 try:
     subprocess.run(["playwright", "install"], check=True)
 except Exception as e:
-    logging.error(f"Error instalando navegadores Playwright: {e}")
+    logging.error(f"❌ Error instalando navegadores Playwright: {e}")
 
-logging.basicConfig(level=logging.INFO)
+# Activamos logs en modo DEBUG
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -24,16 +25,22 @@ def extraer_gigs(query: str):
         )
         page = browser.new_page()
         url = f"https://www.fiverr.com/search/gigs?query={query.replace(' ', '%20')}"
+        logging.info(f"🌐 Visitando URL: {url}")
         page.goto(url, timeout=60000)
-        page.wait_for_timeout(10000)  # Espera para asegurar carga completa
+        page.wait_for_timeout(10000)
 
-        # Capturamos el HTML y lo mostramos en logs (para debug)
+        # Captura HTML
         html = page.content()
         logging.debug(f"\n\n== HTML capturado ==\n{html[:3000]}\n...\n")
 
-        # Intentamos con el selector original
+        # Guardar HTML para revisar manualmente
+        with open("/tmp/fiverr_debug.html", "w", encoding="utf-8") as f:
+            f.write(html)
+
+        # Buscar los gigs con selectores
         gigs = page.query_selector_all("li[data-testid='gig-card-layout']")
         if not gigs:
+            logging.warning("⚠️ No se encontraron gigs con selector principal. Probando fallback...")
             gigs = page.query_selector_all("article")
 
         for gig in gigs[:5]:
@@ -79,10 +86,17 @@ def buscar_gigs():
         logging.error(f"❌ Error en la búsqueda: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route("/debug/html", methods=["GET"])
+def ver_html():
+    """Devuelve el HTML que capturamos en la última búsqueda."""
+    if os.path.exists("/tmp/fiverr_debug.html"):
+        return send_file("/tmp/fiverr_debug.html", mimetype="text/html")
+    return "❌ No se ha capturado HTML aún", 404
+
 @app.route("/", methods=["GET"])
 def home():
     return "Servidor Flask activo 🔥"
 
 if __name__ == '__main__':
-    port = int(os.environ["PORT"])
+    port = int(os.environ.get("PORT", 10000))
     serve(app, host='0.0.0.0', port=port)
