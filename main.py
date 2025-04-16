@@ -1,8 +1,15 @@
+import subprocess
+import os
+import logging
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 from waitress import serve
-import logging
-import os
+
+# Instalar navegadores si no están presentes (solución a Render que los borra)
+try:
+    subprocess.run(["playwright", "install"], check=True)
+except Exception as e:
+    logging.error(f"Error instalando navegadores Playwright: {e}")
 
 logging.basicConfig(level=logging.DEBUG)
 
